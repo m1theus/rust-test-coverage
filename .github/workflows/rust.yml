@@ -8,6 +8,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  REPORT_NAME: 'lcov.info'
 
 jobs:
   build:
@@ -21,21 +22,21 @@ jobs:
 
       - name: Run tests
         run: cargo test --verbose
-
-      - name: Install toolchain
-        id: toolchain
-        uses: actions-rs/toolchain@v1
+  upload_coverage_report:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Generate code coverage
+        run: >
+          cargo llvm-cov
+          --all-features
+          --workspace
+          --lcov
+          --output-path "${{ env.REPORT_NAME }}"
+      - name: Upload coverage to codecov
+        uses: codecov/codecov-action@v3
         with:
-          toolchain: stable
-          target: x86_64-unknown-linux-musl
-          override: true
-          components: llvm-tools-preview
-
-      - name: Download grcov
-        run: |
-          mkdir -p "${HOME}/.local/bin"
-          curl -sL https://github.com/mozilla/grcov/releases/download/v0.8.10/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Run xtask coverage
-        run: |
-          grcov . --binary-path ./target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../*' --ignore "/*" -o target/coverage/tests.lcov
+          files: '${{ env.REPORT_NAME }}'
+          fail_ci_if_error: true
