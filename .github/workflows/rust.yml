@@ -7,8 +7,9 @@ on:
     branches: ['main']
 
 env:
-  CARGO_TERM_COLOR: always
   REPORT_NAME: 'lcov.info'
+  CARGO_TERM_COLOR: always
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
 jobs:
   build:
@@ -24,8 +25,6 @@ jobs:
         run: cargo test --verbose
   upload_coverage_report:
     runs-on: ubuntu-latest
-    env:
-      CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v3
       - uses: taiki-e/install-action@cargo-llvm-cov
@@ -41,3 +40,8 @@ jobs:
         with:
           files: '${{ env.REPORT_NAME }}'
           fail_ci_if_error: true
+      - name: 'Checking code coverage'
+        env:
+          THREASHOLD: ${{ env.COVERAGE_THRESHOLD }}
+        run: >
+          threshold=$(($THREASHOLD)); value=$(cargo llvm-cov | awk 'END{printf "%.0f", $10}'); if [ $(("$value")) -gt $(("$threshold")) ]; then echo "Test coverage accepted"; else echo "TEST_COVERAGE_FAILED; expected: $threshold received: $value"; exit 1; fi
