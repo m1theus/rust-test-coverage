@@ -1,5 +1,7 @@
-#[cfg_attr(coverage_nightly, no_coverage)]
-#[::core::prelude::v1::test]
+#![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+
+
+#[cfg_attr(coverage_nightly, coverage(off))]
 fn main() {
     let r = sum(668.5, 668.5);
 
@@ -16,7 +18,7 @@ mod tests {
 
     #[test]
     fn test_sum_integer() {
-        let result = sum(2,2);
+        let result = sum(2, 2);
         assert_eq!(result, 4)
     }
 
