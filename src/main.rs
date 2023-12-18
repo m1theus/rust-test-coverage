@@ -1,5 +1,5 @@
-
-
+#[cfg_attr(coverage_nightly, no_coverage)]
+#[::core::prelude::v1::test]
 fn main() {
     let r = sum(668.5, 668.5);
 
